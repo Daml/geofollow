@@ -55,6 +55,10 @@ func NetHandler(c net.Conn) {
 
 	n, err := c.Read(buf)
 	if err != nil {
+		if err == io.EOF {
+			log.Printf("%s TCP Closed :(\n", c.RemoteAddr().String())
+			return
+		}
 		log.Fatalln("read messed up", err.Error())
 		panic(err)
 	}
