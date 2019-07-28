@@ -112,6 +112,8 @@ func TCPServer(tcp_bind string) {
 // =================
 
 func WebSockHandler(ws *websocket.Conn) {
+	log.Printf("%s WebSocket Connection ...\n", ws.Request().RemoteAddr)
+
 	r := ws.Request()
 
 	if err := r.ParseForm(); err != nil {
@@ -120,6 +122,8 @@ func WebSockHandler(ws *websocket.Conn) {
 	}
 
 	track := r.Form.Get("track")
+
+	log.Printf("%s WebSocket Register %s\n", ws.Request().RemoteAddr, track)
 
 	queue := make(chan []byte)
 
