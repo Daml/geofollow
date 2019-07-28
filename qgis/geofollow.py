@@ -66,7 +66,7 @@ class GeoFollow:
             pass
 
     def info(self, msg):
-        self.iface.messageBar().pushMessage("GeoFollow", msg, level=QgsMessageBar.INFO, duration=5)
+        self.iface.messageBar().pushMessage("GeoFollow", msg, level=QgsMessageBar.INFO, duration=1)
 
     def error(self, exception):
         if (type(exception) == socket.gaierror) or (type(exception) == socket.error):
