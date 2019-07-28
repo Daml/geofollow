@@ -83,7 +83,7 @@ class GeoFollow:
 
         repro = QgsCoordinateTransform(
             QgsCoordinateReferenceSystem(data['c']),
-            canvas.mapRenderer().destinationCrs()
+            canvas.mapSettings().destinationCrs()
         )
 
         pos = data["b"].split(",")
