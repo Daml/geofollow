@@ -181,6 +181,7 @@ func main() {
 		log.Printf("DEBUG : %+v", pool)
 		http.Error(w, "Not found", 404)
 	})
+	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not found", 404)
 	})
