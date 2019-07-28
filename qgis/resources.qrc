@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/plugins/GeoFollow" >
+        <file>icon_connect.png</file>
+        <file>icon_disconnect.png</file>
+    </qresource>
+</RCC>
