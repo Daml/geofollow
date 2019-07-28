@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"golang.org/x/net/websocket"
 	"io"
@@ -87,10 +88,10 @@ func NetHandler(c net.Conn) {
 	}
 }
 
-func TCPServer() {
-	log.Printf("Listen on tcp4 :9999")
+func TCPServer(tcp_bind string) {
+	log.Printf("Raw TCP listen on tcp4/%s", tcp_bind)
 
-	l, err := net.Listen("tcp4", ":9999")
+	l, err := net.Listen("tcp4", tcp_bind)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -173,7 +174,12 @@ func WMSHandler(w http.ResponseWriter, r *http.Request) {
 var pool = Pool{}
 
 func main() {
-	go TCPServer()
+	var http_bind = flag.String("http_bind", ":13728", "Host and port for HTTP server")
+	var tcp_bind = flag.String("tcp_bind", ":13729", "Host and port for raw TCP server")
+
+	flag.Parse()
+
+	go TCPServer(*tcp_bind)
 
 	http.Handle("/follow", websocket.Handler(WebSockHandler))
 	http.HandleFunc("/wms", WMSHandler)
@@ -186,5 +192,6 @@ func main() {
 		http.Error(w, "Not found", 404)
 	})
 
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Printf("HTTP listen on %s", *http_bind)
+	log.Fatal(http.ListenAndServe(*http_bind, nil))
 }
