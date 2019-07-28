@@ -127,10 +127,20 @@ func WebSockHandler(ws *websocket.Conn) {
 
 	queue := make(chan []byte)
 
+	defer func() {
+		log.Printf("%s WebSocket Freeing", ws.Request().RemoteAddr)
+		pool.Free(track, queue)
+		close(queue)
+		ws.Close()
+	}()
+
 	pool.Register(track, queue)
 
 	for msg := range queue {
-		ws.Write(msg)
+		_, err := ws.Write(msg)
+		if err != nil {
+			return
+		}
 	}
 }
 
