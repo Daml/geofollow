@@ -29,14 +29,12 @@ class GeoFollow:
         self.connectAction = QAction(QIcon(':/plugins/GeoFollow/icon_connect.png'), 'Connect', self.iface.mainWindow())
         self.connectAction.triggered.connect(self.run)
         self.connectAction.setEnabled(True)
-        self.connectAction.setStatusTip(u"Connect to GeoFollow server")
         self.toolbar.addAction(self.connectAction)
         self.iface.addPluginToMenu(self.menu, self.connectAction)
 
         self.disconnectAction = QAction(QIcon(':/plugins/GeoFollow/icon_disconnect.png'), 'Disconnect', self.iface.mainWindow())
         self.disconnectAction.triggered.connect(self.stop)
         self.disconnectAction.setEnabled(False)
-        self.disconnectAction.setStatusTip(u"Disconnect from GeoFollow server")
         self.toolbar.addAction(self.disconnectAction)
         self.iface.addPluginToMenu(self.menu, self.disconnectAction)
 
@@ -67,9 +65,8 @@ class GeoFollow:
             self.start(self.dlg.hostLineEdit.text(), self.dlg.portLineEdit.text(), self.dlg.trackerLineEdit.text())
             pass
 
-    def log(self, msg, level=QgsMessageLog.INFO):
-        QgsMessageLog.logMessage(msg, 'GeoFollow', level)
-        self.iface.mainWindow().statusBar().showMessage("GeoFollow : %s" % msg)
+    def info(self, msg):
+        self.iface.messageBar().pushMessage("GeoFollow", msg, level=QgsMessageBar.INFO, duration=5)
 
     def error(self, exception):
         if (type(exception) == socket.gaierror) or (type(exception) == socket.error):
@@ -105,28 +102,32 @@ class GeoFollow:
 
     def start(self, host, port, tracker):
         self.connectAction.setEnabled(False)
-        self.log("Try to connect to %s:%s/%s" % (host, port, tracker))
         self.thread = QThread()
         self.worker = Worker(host, port, tracker)
         self.worker.moveToThread(self.thread)
 
+        self.worker.update.connect(self.update)
+        self.worker.info.connect(self.info)
+        self.worker.error.connect(self.error)
+
         self.thread.started.connect(self.worker.loop)
 
-        self.worker.update.connect(self.update)
-        self.worker.status.connect(self.log)
-        self.worker.error.connect(self.error)
         self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.reset)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
 
         self.thread.start()
 
         self.disconnectAction.setEnabled(True)
 
+    def reset(self):
+        self.connectAction.setEnabled(True)
+
     def stop(self):
         self.disconnectAction.setEnabled(False)
         if self.worker:
             self.worker.kill()
-        self.log("Stopped !")
-        self.connectAction.setEnabled(True)
 
 class Worker(QObject):
     def __init__(self, host, port, tracker, *args, **kwargs):
@@ -134,18 +135,17 @@ class Worker(QObject):
         self.host = host
         self.port = port
         self.tracker = tracker
-
         self.abort = False
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket = None
 
     def loop(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            self.status.emit('Connecting ...')
             self.socket.connect((self.host, int(self.port)))
             self.socket.sendall(self.tracker)
-            self.status.emit('Connected !')
+            self.info.emit('Connected !')
             buf = b""
-            self.socket.settimeout(10)
+            self.socket.settimeout(1)
 
             while True:
                 if self.abort:
@@ -170,19 +170,18 @@ class Worker(QObject):
                 except socket.timeout as e:
                     pass
 
-            self.status.emit('Disconnected')
+            self.info.emit('Disconnected.')
+            self.socket.close()
+            self.finished.emit(True)
         except Exception as e:
+            self.socket.close()
             self.error.emit(e)
             self.finished.emit(False)
-        else:
-            self.finished.emit(True)
-        finally:
-            self.socket.close()
 
     def kill(self):
         self.abort = True
 
     update = pyqtSignal(dict)
-    status = pyqtSignal(str)
+    info = pyqtSignal(str)
     error = pyqtSignal(Exception)
     finished = pyqtSignal(bool)
