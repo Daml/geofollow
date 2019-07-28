@@ -45,7 +45,7 @@
                 };
             };
         run();
-    }(map, "ws://localhost:8000/follow?track=web"));
+    }(map, "ws://" + document.location.href.split("/")[2] + "/follow?track=web"));
 }());
         </script>
     </body>
