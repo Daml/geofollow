@@ -49,11 +49,21 @@ class GeoFollow:
         del self.toolbar
 
     def run(self):
+        s = QSettings()
+
         self.dlg = GeoFollowDialog()
+        self.dlg.hostLineEdit.setText(s.value("geofollow/host", "localhost"))
+        self.dlg.portLineEdit.setText(s.value("geofollow/port", "13729"))
+        self.dlg.trackerLineEdit.setText(s.value("geofollow/tracker", "web"))
+
         self.dlg.show()
         result = self.dlg.exec_()
 
         if result:
+            s.setValue("geofollow/host", self.dlg.hostLineEdit.text())
+            s.setValue("geofollow/port", self.dlg.portLineEdit.text())
+            s.setValue("geofollow/tracker", self.dlg.trackerLineEdit.text())
+
             self.start(self.dlg.hostLineEdit.text(), self.dlg.portLineEdit.text(), self.dlg.trackerLineEdit.text())
             pass
 
