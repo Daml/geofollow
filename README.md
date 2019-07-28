@@ -44,4 +44,3 @@ Todo
 
 * Tests QGIS 3
 * Rétention de la dernière position transmise par flux pour envoi immediat au lecteur qui se connecte.
-* Log fichier exploitable

@@ -173,7 +173,7 @@ func WMSHandler(w http.ResponseWriter, r *http.Request) {
 		width := r.Form.Get("WIDTH")
 		height := r.Form.Get("HEIGHT")
 		crs := r.Form.Get("CRS")
-		log.Printf("%s WMS GetMap(%s) = %sx%s %s (%s)", r.RemoteAddr, track, width, height, crs, bbox)
+		history.Printf("%s\t%s\t%s\t%s\t%s", track, crs, bbox, r.RemoteAddr, r.UserAgent())
 		m := map[string]string{"w": width, "h": height, "b": bbox, "c": crs}
 		pool.Broadcast(track, m)
 	default:
@@ -186,12 +186,23 @@ func WMSHandler(w http.ResponseWriter, r *http.Request) {
 // ============
 
 var pool = Pool{}
+var history *log.Logger
 
 func main() {
 	var http_bind = flag.String("http_bind", ":13728", "Host and port for HTTP server")
 	var tcp_bind = flag.String("tcp_bind", ":13729", "Host and port for raw TCP server")
+	var log_file = flag.String("log_file", "history.log", "WMS requests log filepath")
 
 	flag.Parse()
+
+	f, err := os.OpenFile(*log_file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f.Close()
+
+	history = log.New(f, "", log.LUTC|log.Ldate|log.Lmicroseconds)
 
 	go TCPServer(*tcp_bind)
 
