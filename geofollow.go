@@ -153,8 +153,9 @@ func WMSHandler(w http.ResponseWriter, r *http.Request) {
 		bbox := r.Form.Get("BBOX")
 		width := r.Form.Get("WIDTH")
 		height := r.Form.Get("HEIGHT")
-		log.Printf("%s WMS GetMap(%s) = %sx%s (%s)", r.RemoteAddr, track, width, height, bbox)
-		m := map[string]string{"w": width, "h": height, "b": bbox}
+		crs := r.Form.Get("CRS")
+		log.Printf("%s WMS GetMap(%s) = %sx%s %s (%s)", r.RemoteAddr, track, width, height, crs, bbox)
+		m := map[string]string{"w": width, "h": height, "b": bbox, "c": crs}
 		pool.Broadcast(track, m)
 	default:
 		log.Printf("%s WMS Not Implemented : %s", r.RemoteAddr, request)
