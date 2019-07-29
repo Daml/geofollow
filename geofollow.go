@@ -29,6 +29,8 @@ func (p Pool) Broadcast(name string, payload map[string]string) {
 		return
 	}
 
+	last[name] = bytes
+
 	for _, listener := range p[name] {
 		select {
 		case listener <- bytes:
@@ -78,6 +80,11 @@ func NetHandler(c net.Conn) {
 	}()
 
 	pool.Register(track, queue)
+
+	if bytes, ok := last[track]; ok {
+		c.Write(bytes)
+		c.Write([]byte("\n"))
+	}
 
 	for msg := range queue {
 		_, err := c.Write(msg)
@@ -136,6 +143,10 @@ func WebSockHandler(ws *websocket.Conn) {
 
 	pool.Register(track, queue)
 
+	if bytes, ok := last[track]; ok {
+		ws.Write(bytes)
+	}
+
 	for msg := range queue {
 		_, err := ws.Write(msg)
 		if err != nil {
@@ -186,6 +197,7 @@ func WMSHandler(w http.ResponseWriter, r *http.Request) {
 // ============
 
 var pool = Pool{}
+var last map[string][]byte
 var history *log.Logger
 
 func main() {
@@ -204,12 +216,15 @@ func main() {
 
 	history = log.New(f, "", log.LUTC|log.Ldate|log.Lmicroseconds)
 
+	last = make(map[string][]byte)
+
 	go TCPServer(*tcp_bind)
 
 	http.Handle("/follow", websocket.Handler(WebSockHandler))
 	http.HandleFunc("/wms", WMSHandler)
 	http.HandleFunc("/debug", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("DEBUG : %+v", pool)
+		log.Printf("Last : %+v", last)
 		http.Error(w, "Not found", 404)
 	})
 	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
