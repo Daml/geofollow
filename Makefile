@@ -15,7 +15,7 @@ build/geofollow: geofollow.go
 
 build/geofollow.exe: geofollow.go
 	mkdir -p $(@D)
-	GOOS=windows GOARCH=386 go build -o $@ $<
+	GOOS=windows GOARCH=amd64 go build -o $@ $<
 
 build/qgis/$(PLUGIN_NAME)/resources.py: qgis/resources.qrc qgis/icon_connect.png qgis/icon_disconnect.png
 	mkdir -p $(@D)
