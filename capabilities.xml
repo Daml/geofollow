@@ -50,10 +50,12 @@
     <Layer queryable="1">
       <Name>0</Name>
       <Title>Tracker</Title>
+      <SRS>EPSG:2154</SRS>
       <SRS>EPSG:4326</SRS>
       <SRS>EPSG:3857</SRS>
       <SRS>CRS:84</SRS>
       <LatLonBoundingBox minx="-180.0" miny="-90.0" maxx="180.0" maxy="90.0" />
+      <BoundingBox SRS="EPSG:2154" minx="-378305.81" miny="6093283.21" maxx="1212610.74" maxy="7186901.68" />
       <BoundingBox SRS="EPSG:3857" minx="-2.0037508342789244E7" miny="-2.5776731363158423E7" maxx="2.0037508342789244E7" maxy="2.57767313631584E7" />
       <BoundingBox SRS="EPSG:4326" minx="-180.0" miny="-90.0" maxx="180.0" maxy="90.0" />
       <BoundingBox SRS="CRS:84" minx="-180.0" miny="-90.0" maxx="180.0" maxy="90.0" />
