@@ -2,11 +2,15 @@
 name=GeoFollow
 qgisMinimumVersion=2.0
 description=Sync QGIS map position from a GeoFollow server
-version=0.1
+version=1.1
+qgisMinimumVersion=2.18
+qgisMaximumVersion=2.22
 author=Damien Lelievre
 email=damien@daml.fr
 about=Sync QGIS map position from a GeoFollow server
 tags=python,tracker
+tracker=https://github.com/daml/geofollow
+repository=https://github.com/daml/geofollow
 homepage=https://github.com/daml/geofollow
 category=Plugins
 icon=icon.png
